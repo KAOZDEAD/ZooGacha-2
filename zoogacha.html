@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZooGacha — Seu Zoológico Virtual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sand:#F5EEDA; --sand-deep:#EADFC0;
+    --forest:#2E4E33; --forest-deep:#203A26;
+    --leaf:#6FA96A; --leaf-deep:#4F8A54;
+    --sky:#6FB6D9; --sunset:#E17F44; --sunset-deep:#C7652C;
+    --gold:#DDA92E; --ink:#2B2620; --paper:#FFFBF2;
+    --gem:#7C6FD9; --gem-deep:#5C4FB8;
+    --c-common:#8FA98F; --c-uncommon:#4C93C9; --c-rare:#A45AC9; --c-epic:#D9662C;
+    --c-legendary:#DDA92E; --c-mythic:#D63A4A; --c-secret:#5B4B8A; --c-divine:#E0B93C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Nunito',sans-serif; color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 8%, #fffaeb 0%, transparent 40%),
+      repeating-linear-gradient(135deg, var(--sand) 0px, var(--sand) 26px, var(--sand-deep) 26px, var(--sand-deep) 27px),
+      var(--sand);
+    min-height:100vh; padding-bottom:50px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:16px 14px 40px;}
+  header{text-align:center;padding:18px 10px 4px;}
+  header h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:clamp(1.9rem,7vw,2.7rem);color:var(--forest-deep);margin:0;letter-spacing:0.5px;}
+  header h1 span{color:var(--sunset);}
+  header p{font-style:italic;color:var(--forest);opacity:0.75;margin:2px 0 0;font-size:0.9rem;}
+
+  .stats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 16px;}
+  .chip{background:var(--paper);border:2px solid var(--forest-deep);border-radius:999px;padding:7px 14px;display:flex;align-items:center;gap:6px;box-shadow:0 3px 0 rgba(46,78,51,0.25);font-weight:700;font-family:'Fredoka',sans-serif;font-size:0.85rem;color:var(--forest-deep);}
+  .chip.gem{border-color:var(--gem-deep);color:var(--gem-deep);}
+  .chip .ic{font-size:1.05rem;}
+  .chip small{font-family:'Nunito',sans-serif;font-weight:600;color:var(--ink);opacity:0.55;margin-left:2px;}
+
+  .tabbar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+  .tabbtn{font-family:'Fredoka',sans-serif;font-weight:600;font-size:0.8rem;background:var(--paper);border:2px solid var(--forest-deep);border-radius:12px;padding:8px 11px;cursor:pointer;color:var(--forest-deep);opacity:0.55;}
+  .tabbtn.active{opacity:1;background:var(--leaf);color:#fff;box-shadow:0 3px 0 var(--leaf-deep);}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;}
+
+  .card{background:var(--paper);border:2px solid var(--forest-deep);border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 5px 0 rgba(46,78,51,0.18);position:relative;}
+  .card h2{font-family:'Fredoka',sans-serif;font-size:1.12rem;color:var(--forest-deep);margin:0 0 12px;display:flex;align-items:center;gap:8px;}
+  .card p.sub{font-size:0.78rem;opacity:0.65;margin:-8px 0 12px;}
+
+  .income-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+  .pool{font-family:'Fredoka',sans-serif;font-size:1.6rem;color:var(--sunset-deep);}
+  .pool small{font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;color:var(--ink);opacity:0.6;}
+  button{font-family:'Fredoka',sans-serif;font-weight:600;border:none;cursor:pointer;border-radius:12px;padding:11px 18px;font-size:0.92rem;transition:transform .08s ease;}
+  button:active{transform:translateY(2px);}
+  button:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn-primary{background:var(--sunset);color:#fff;box-shadow:0 4px 0 var(--sunset-deep);}
+  .btn-secondary{background:var(--leaf);color:#fff;box-shadow:0 4px 0 var(--leaf-deep);}
+  .btn-gem{background:var(--gem);color:#fff;box-shadow:0 4px 0 var(--gem-deep);}
+  .btn-danger{background:var(--c-mythic);color:#fff;box-shadow:0 4px 0 #A32432;}
+  .btn-ghost{background:transparent;color:var(--forest-deep);border:2px solid var(--forest-deep);box-shadow:none;}
+  .btn-sm{padding:6px 10px;font-size:0.75rem;}
+  .toggle-row{display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:700;color:var(--forest-deep);font-size:0.86rem;}
+  .toggle-row input{width:17px;height:17px;accent-color:var(--leaf-deep);}
+  .boost-banner{background:rgba(124,111,217,0.12);border:2px dashed var(--gem-deep);border-radius:10px;padding:8px 12px;font-size:0.78rem;font-weight:700;color:var(--gem-deep);margin-top:10px;}
+  .event-banner{background:linear-gradient(90deg, rgba(76,159,76,0.15), rgba(224,185,60,0.18));border:2px dashed var(--gold);border-radius:10px;padding:10px 12px;font-weight:800;color:var(--forest-deep);text-align:center;font-family:'Fredoka',sans-serif;font-size:0.9rem;}
+
+  .zoo-field{background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.25), transparent 45%),linear-gradient(160deg, #8FBF7F, #5C9E58 70%);border-radius:14px;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px;}
+  .slot{aspect-ratio:1/1;background:rgba(255,251,242,0.92);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid rgba(46,78,51,0.35);position:relative;overflow:hidden;}
+  .slot .emoji{font-size:1.5rem;}
+  .slot.locked .emoji{opacity:0.25;filter:grayscale(1);font-size:1.3rem;}
+  .slot .star{position:absolute;top:2px;left:3px;font-size:0.55rem;}
+  .slot .shinytag{position:absolute;top:2px;right:3px;font-size:0.58rem;}
+  .slot .name{font-size:0.52rem;font-weight:700;margin-top:1px;text-align:center;color:var(--forest-deep);opacity:0.8;}
+  .slot.rarity-common{border-color:var(--c-common);}
+  .slot.rarity-uncommon{border-color:var(--c-uncommon);}
+  .slot.rarity-rare{border-color:var(--c-rare);}
+  .slot.rarity-epic{border-color:var(--c-epic);}
+  .slot.rarity-legendary{border-color:var(--c-legendary);box-shadow:0 0 0 2px var(--c-legendary) inset;}
+  .slot.rarity-mythic{border-color:var(--c-mythic);box-shadow:0 0 0 2px var(--c-mythic) inset;}
+  .slot.rarity-secret{border-color:var(--c-secret);box-shadow:0 0 0 2px var(--c-secret) inset;background:#efeaf7;}
+  .slot.rarity-divine{border-color:var(--c-divine);box-shadow:0 0 8px 1px var(--c-divine) inset;background:linear-gradient(120deg,#fff8dd,#fff1b8);}
+  .slot.has-shiny{background:linear-gradient(120deg,#fff8dd,#fff1b8,#fff8dd);background-size:200% 200%;animation:shimmer 2.4s linear infinite;}
+  @keyframes shimmer{0%{background-position:0% 50%;}100%{background-position:200% 50%;}}
+
+  .pet-card{border:2px solid rgba(46,78,51,0.25);border-radius:14px;padding:12px;margin-bottom:10px;background:rgba(255,251,242,0.7);}
+  .pet-head{display:flex;align-items:center;gap:8px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:0.98rem;color:var(--forest-deep);}
+  .pet-head .tag{font-size:0.6rem;font-weight:800;padding:2px 7px;border-radius:8px;color:#fff;text-transform:uppercase;}
+  .pet-counts{font-size:0.8rem;margin-top:6px;opacity:0.85;}
+  .pet-counts .shiny-gold{color:var(--gold);font-weight:800;}
+  .pet-passive{font-size:0.78rem;margin-top:6px;background:rgba(46,78,51,0.06);border-radius:8px;padding:5px 8px;}
+  .pet-hunger{font-size:0.76rem;margin-top:6px;font-weight:700;}
+  .pet-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+
+  .den{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .mound{width:150px;height:110px;position:relative;display:flex;align-items:center;justify-content:center;}
+  .mound-shape{width:130px;height:80px;background:radial-gradient(ellipse at center, #A5713C, #7C5228 80%);border-radius:50% 50% 45% 45%/60% 60% 40% 40%;box-shadow:0 6px 0 rgba(0,0,0,0.12);position:relative;}
+  .mound-shape::before{content:"";position:absolute;top:-10px;left:15px;width:40px;height:22px;background:var(--leaf-deep);border-radius:50%;}
+  .mound-shape::after{content:"";position:absolute;top:-6px;right:20px;width:28px;height:16px;background:var(--leaf);border-radius:50%;}
+  .mound.shaking .mound-shape{animation:shake 0.4s ease-in-out infinite;}
+  @keyframes shake{0%,100%{transform:translate(0,0) rotate(0deg);}25%{transform:translate(-3px,-1px) rotate(-2deg);}75%{transform:translate(3px,-1px) rotate(2deg);}}
+  .reveal{min-height:70px;display:flex;align-items:center;justify-content:center;text-align:center;}
+  .reveal .card-anim{background:var(--paper);border-radius:14px;padding:12px 20px;border:3px solid var(--c-common);font-family:'Fredoka',sans-serif;animation:pop .35s ease;}
+  @keyframes pop{from{transform:scale(0.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .reveal .card-anim .re{font-size:2.3rem;display:block;}
+  .reveal .card-anim .rn{font-weight:600;display:block;margin-top:3px;}
+  .reveal .card-anim .rn.shiny-gold{color:var(--gold);}
+  .reveal .card-anim .rr{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.7;}
+  .reveal .card-anim .rs{font-size:0.75rem;font-weight:800;color:var(--gold);display:block;margin-top:2px;}
+  .particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;}
+  .cost-row{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .cost-row b{font-family:'Fredoka',sans-serif;font-size:1.02rem;color:var(--forest-deep);}
+  .cost-row small{opacity:0.6;font-weight:700;}
+
+  .shop-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+  .shop-item{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(46,78,51,0.05);border-radius:12px;padding:10px 12px;flex-wrap:wrap;}
+  .shop-item .info b{font-family:'Fredoka',sans-serif;font-size:0.9rem;color:var(--forest-deep);display:block;}
+  .shop-item .info span{font-size:0.74rem;opacity:0.7;}
+  .shop-item .lvltag{font-size:0.66rem;font-weight:800;color:var(--forest-deep);opacity:0.6;margin-left:4px;}
+
+  select{font-family:'Nunito',sans-serif;font-weight:700;padding:9px;border-radius:10px;border:2px solid var(--forest-deep);width:100%;margin-top:6px;font-size:0.85rem;}
+
+  .mission{background:rgba(46,78,51,0.05);border-radius:12px;padding:12px;margin-bottom:10px;}
+  .mission-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .mission-top b{font-family:'Fredoka',sans-serif;font-size:0.88rem;color:var(--forest-deep);}
+  .bar-bg{background:rgba(46,78,51,0.15);border-radius:8px;height:10px;margin-top:8px;overflow:hidden;}
+  .bar-fill{background:var(--leaf-deep);height:100%;border-radius:8px;transition:width .3s ease;}
+  .mission-reward{font-size:0.74rem;opacity:0.7;margin-top:4px;}
+
+  #codeInput{width:100%;padding:11px;border-radius:10px;border:2px solid var(--forest-deep);font-family:'Nunito',sans-serif;font-weight:700;font-size:0.92rem;text-transform:uppercase;}
+  .code-msg{margin-top:10px;font-weight:700;font-size:0.85rem;}
+  .code-list{margin-top:14px;font-size:0.74rem;opacity:0.55;}
+
+  .footer-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .lb-row{display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px dashed rgba(46,78,51,0.25);font-weight:700;font-size:0.86rem;}
+
+  .catalog-tier{margin-bottom:10px;}
+  .catalog-tier b{font-family:'Fredoka',sans-serif;font-size:0.82rem;}
+  .catalog-tier .names{font-size:0.76rem;opacity:0.75;}
+
+  .flee-log{font-size:0.74rem;opacity:0.7;max-height:110px;overflow-y:auto;margin-top:8px;border-top:1px dashed rgba(46,78,51,0.25);padding-top:8px;}
+
+  .overlay{position:fixed;inset:0;background:rgba(43,38,32,0.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .hidden{display:none !important;}
+  .modal{background:var(--paper);border-radius:18px;padding:24px 20px;max-width:420px;width:100%;text-align:center;border:2px solid var(--forest-deep);max-height:85vh;overflow-y:auto;}
+  .modal h2{font-family:'Fredoka',sans-serif;color:var(--forest-deep);margin-top:0;}
+  .starter-choices{display:flex;justify-content:center;gap:14px;margin:18px 0 6px;flex-wrap:wrap;}
+  .starter-choices button{background:var(--paper);border:2px solid var(--forest-deep);border-radius:14px;padding:16px 14px;font-size:2rem;box-shadow:0 3px 0 rgba(46,78,51,0.25);}
+  .starter-choices button span{display:block;font-size:0.68rem;font-family:'Nunito',sans-serif;font-weight:700;margin-top:4px;}
+  #lbInput{width:100%;padding:10px;border-radius:10px;border:2px solid var(--forest-deep);font-family:'Nunito',sans-serif;font-weight:700;margin-top:12px;font-size:0.92rem;}
+  .close-x{position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.3rem;color:var(--forest-deep);cursor:pointer;}
+  .note{font-size:0.74rem;opacity:0.6;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Zoo<span>Gacha</span></h1>
+    <p>Seu Zoológico Virtual</p>
+  </header>
+
+  <div class="stats">
+    <div class="chip"><span class="ic">🪙</span><span id="statCoins">0</span></div>
+    <div class="chip gem"><span class="ic">💎</span><span id="statGems">0</span></div>
+    <div class="chip" style="border-color:#2C6FBF;color:#2C6FBF;"><span class="ic">⚽</span><span id="statBolas">0</span></div>
+    <div class="chip"><span class="ic">🐾</span><span id="statAnimals">0/24</span></div>
+    <div class="chip"><span class="ic">📈</span><span id="statIncome">0/s</span></div>
+    <div class="chip" style="border-color:#C7652C;color:#C7652C;"><span class="ic">👤</span><span id="statNick">—</span></div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tabbtn active" data-tab="inicio">🏠 Início</button>
+    <button class="tabbtn" data-tab="zoo">🦓 Zoológico</button>
+    <button class="tabbtn" data-tab="shop">🛒 Loja</button>
+    <button class="tabbtn" data-tab="inventory">🎒 Inventário</button>
+    <button class="tabbtn" data-tab="missions">🎯 Missões</button>
+    <button class="tabbtn" data-tab="codes">🎟️ Códigos</button>
+    <button class="tabbtn" data-tab="event">⚽ Copa</button>
+    <button class="tabbtn" data-tab="ranking">🏆 Ranking</button>
+    <button class="tabbtn" data-tab="trades">🤝 Trocas</button>
+    <button class="tabbtn" data-tab="help">❓ Como Jogar</button>
+  </div>
+
+  <!-- INÍCIO -->
+  <div class="tabpanel active" id="tab-inicio">
+    <div class="card">
+      <h2>🏦 Renda do Zoológico</h2>
+      <div class="income-row">
+        <div class="pool">🪙 <span id="poolAmount">0</span><br><small>moedas acumuladas</small></div>
+        <button class="btn-primary" id="collectBtn">Coletar Moedas</button>
+      </div>
+      <label class="toggle-row"><input type="checkbox" id="autoToggle"> Coleta automática</label>
+      <div class="boost-banner hidden" id="boostBanner"></div>
+    </div>
+
+    <div class="card">
+      <h2>🕳️ Gacha de Animais</h2>
+      <div class="den">
+        <div class="mound" id="mound">
+          <div class="mound-shape"></div>
+          <div class="reveal" id="reveal"></div>
+        </div>
+        <div class="cost-row">
+          <b id="gachaCost">Custo: 300 moedas</b>
+          <small id="gachaNext">Aumento por compra: 12%</small>
+        </div>
+        <button class="btn-secondary" id="gachaBtn">Comprar Gacha</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔄 Rebirth</h2>
+      <p class="sub">Renasça para ganhar <b>1.2× renda</b> e <b>1.2× sorte</b> permanentes (multiplicativo, acumula a cada renascimento). Você perde todos os animais do zoológico principal e recebe um starter aleatório. Requer pelo menos 5 espécies diferentes.</p>
+      <p style="font-family:'Fredoka',sans-serif;color:var(--forest-deep);">Renascimentos: <b id="rebirthCount">0</b> · Bônus atual: <b id="rebirthBonus">1.00×</b></p>
+      <button class="btn-danger" id="rebirthBtn">Renascer</button>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn-ghost" id="resetBtn">↺ Reiniciar Tudo</button>
+    </div>
+    <p class="note" id="saveNote" style="text-align:center;">Sincronizando...</p>
+  </div>
+
+  <!-- ZOOLÓGICO -->
+  <div class="tabpanel" id="tab-zoo">
+    <div class="card">
+      <h2>🦓 Seu Zoológico</h2>
+      <p class="sub" id="capacityText">0/24 espécies · slots: 0/10</p>
+      <div class="zoo-field" id="zooField"></div>
+    </div>
+    <div class="card">
+      <h2>🍖 Cuidados &amp; Evolução</h2>
+      <p class="sub">Animais ficam com fome após 24h sem comer e fogem se passarem 3h com fome. Ração impede que fujam. Junte 3 cópias iguais no mesmo nível de estrela para evoluir.</p>
+      <div id="petList"></div>
+      <p class="sub" style="margin:10px 0 0;">📋 Registro de atividades:</p>
+      <div class="flee-log" id="fleeLog"></div>
+    </div>
+    <div class="card">
+      <h2>📖 Catálogo de Passivas</h2>
+      <p class="sub">Cada animal capturado recebe uma passiva aleatória (ou nenhuma). Use a Troca de Passiva na Loja para reorganizar.</p>
+      <div id="passiveCatalog"></div>
+    </div>
+  </div>
+
+  <!-- LOJA -->
+  <div class="tabpanel" id="tab-shop">
+    <div class="card">
+      <h2>🏗️ Melhorias Permanentes</h2>
+      <div class="shop-grid" id="shopPermanent"></div>
+    </div>
+    <div class="card">
+      <h2>🧪 Consumíveis</h2>
+      <div class="shop-grid" id="shopConsumable"></div>
+    </div>
+    <div class="card">
+      <h2>🔄 Troca de Passiva</h2>
+      <p class="sub">Troca a passiva entre dois animais que você possui (custa 10.000 moedas).</p>
+      <label style="font-size:0.8rem;font-weight:700;">De:</label>
+      <select id="swapSource"></select>
+      <label style="font-size:0.8rem;font-weight:700;">Para:</label>
+      <select id="swapTarget"></select>
+      <button class="btn-gem" id="swapBtn" style="margin-top:10px;width:100%;">Trocar (🪙 10.000)</button>
+      <p class="note" id="swapMsg"></p>
+    </div>
+  </div>
+
+  <!-- INVENTÁRIO -->
+  <div class="tabpanel" id="tab-inventory">
+    <div class="card">
+      <h2>🎒 Inventário</h2>
+      <p class="sub">Itens guardados para uso posterior.</p>
+      <div class="shop-item">
+        <div class="info"><b>🍖 Ração</b><span>Alimenta 1 animal, evitando que fuja por fome</span></div>
+        <span style="font-family:'Fredoka',sans-serif;font-weight:800;color:var(--forest-deep);" id="invRacao">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MISSÕES -->
+  <div class="tabpanel" id="tab-missions">
+    <div class="card">
+      <h2>🎯 Missões</h2>
+      <p class="sub">Complete e receba recompensas. Novas missões aparecem automaticamente.</p>
+      <div id="missionList"></div>
+    </div>
+  </div>
+
+  <!-- CÓDIGOS -->
+  <div class="tabpanel" id="tab-codes">
+    <div class="card">
+      <h2>🎟️ Resgatar Código</h2>
+      <p class="sub">Digite um código válido para receber recompensas exclusivas.</p>
+      <input id="codeInput" placeholder="DIGITE O CÓDIGO">
+      <button class="btn-primary" id="codeBtn" style="margin-top:10px;width:100%;">Resgatar</button>
+      <div class="code-msg" id="codeMsg"></div>
+      <div class="code-list">Códigos já resgatados: <span id="redeemedCount">0</span></div>
+    </div>
+  </div>
+
+  <!-- EVENTO COPA DO MUNDO -->
+  <div class="tabpanel" id="tab-event">
+    <div class="card">
+      <h2>🏆 Evento: Copa do Mundo</h2>
+      <div class="event-banner" id="eventCountdown">Carregando evento...</div>
+      <p class="sub">Ganhe ⚽ Bolas de Ouro nos pênaltis e troque por seleções exclusivas. As seleções ficam para sempre no seu zoológico, mesmo depois do evento, e não sofrem com fome.</p>
+    </div>
+    <div class="card">
+      <h2>🥅 Cobrança de Pênaltis</h2>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn-secondary" data-pen="esquerda">⬅️ Esquerda</button>
+        <button class="btn-secondary" data-pen="meio">⬆️ Meio</button>
+        <button class="btn-secondary" data-pen="direita">➡️ Direita</button>
+      </div>
+      <div id="penaltyResult" style="margin-top:12px;font-weight:800;text-align:center;font-family:'Fredoka',sans-serif;min-height:24px;"></div>
+      <p class="note" style="text-align:center;">Gols: <span id="statGoals">0</span> em <span id="statAttempts">0</span> cobranças</p>
+    </div>
+    <div class="card">
+      <h2>🏟️ Estádio de Seleções</h2>
+      <p class="sub" id="eventCollected">0/6 seleções colecionadas</p>
+      <div class="zoo-field" id="eventField"></div>
+      <div class="den" style="margin-top:14px;">
+        <div class="mound" id="mound2">
+          <div class="mound-shape"></div>
+          <div class="reveal" id="reveal2"></div>
+        </div>
+        <div class="cost-row"><b id="eventGachaCostLabel">Custo: 50 bolas</b></div>
+        <button class="btn-gem" id="eventGachaBtn">Convocar Seleção</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🎯 Missões da Copa</h2>
+      <div id="eventMissionList"></div>
+    </div>
+  </div>
+
+  <!-- COMO JOGAR -->
+  <div class="tabpanel" id="tab-help">
+    <div class="card">
+      <h2>🏦 Renda</h2>
+      <p class="sub">Cada animal produz moedas por segundo. Elas se acumulam na "piscina" (🪙 moedas acumuladas). Aperte <b>Coletar Moedas</b> para transferi-las pro seu saldo, ou ative a <b>Coleta automática</b> no Início.</p>
+    </div>
+    <div class="card">
+      <h2>🕳️ Gacha e Raridades</h2>
+      <p class="sub">Gire o gacha na aba Início para conseguir animais aleatórios. Existem 8 raridades, da mais comum à mais rara:</p>
+      <p class="sub"><b style="color:#8FA98F">Comum</b> → <b style="color:#4C93C9">Incomum</b> → <b style="color:#A45AC9">Raro</b> → <b style="color:#D9662C">Épico</b> → <b style="color:#DDA92E">Lendário</b> → <b style="color:#D63A4A">Mítico</b> → <b style="color:#5B4B8A">Secreto</b> → <b style="color:#E0B93C">Divino</b>. Quanto mais rara, maior a renda base.</p>
+      <p class="sub">O custo do gacha sobe a cada compra. Itens da loja e passivas podem reduzir esse custo ou melhorar suas chances.</p>
+    </div>
+    <div class="card">
+      <h2>✨ Shiny</h2>
+      <p class="sub">Todo animal tem uma chance de nascer <b>shiny</b> (nome dourado + ✨), rendendo <b>2x</b> a renda normal. A chance varia por raridade e pode ser aumentada com passivas, itens da loja e rebirth.</p>
+    </div>
+    <div class="card">
+      <h2>⭐ Evolução</h2>
+      <p class="sub">Junte <b>3 cópias iguais</b> do mesmo animal, no mesmo nível de estrela, para evoluir (2 cópias se ele tiver a passiva Gênio). Você perde as cópias usadas e ganha 1 animal no próximo nível:</p>
+      <p class="sub">Base (1x) → ⭐ (2x renda) → ⭐⭐ (3x renda) → ⭐⭐⭐ (4x renda, nível máximo). Normal e shiny evoluem separadamente.</p>
+    </div>
+    <div class="card">
+      <h2>🍖 Fome</h2>
+      <p class="sub">Depois de <b>24h</b> sem comer, um animal fica com fome. Se continuar <b>3h</b> com fome, ele foge (você perde todas as cópias dele, inclusive shinies e estrelas). Alimente com <b>Ração</b> (compre na Loja, guardada no Inventário) para resetar o relógio. Algumas passivas dão imunidade ou atrasam a fome.</p>
+      <p class="sub">Sem espaço para um animal novo? Você pode <b>Libertar</b> um animal que já tem na aba Zoológico para abrir um slot.</p>
+    </div>
+    <div class="card">
+      <h2>⚡ Passivas</h2>
+      <p class="sub">Todo animal capturado sorteia uma passiva (ou nenhuma, 20% de chance) entre dezenas possíveis, cada uma com sua própria raridade. Veja o catálogo completo na aba Zoológico. Na Loja, use <b>Troca de Passiva</b> para trocar a passiva entre dois animais que você já tem.</p>
+    </div>
+    <div class="card">
+      <h2>🛒 Loja &amp; 🎒 Inventário</h2>
+      <p class="sub"><b>Melhorias permanentes</b> (compradas com 💎 gemas ou 🪙 moedas) ficam para sempre. <b>Consumíveis</b> dão efeitos temporários ou viram itens no seu Inventário, como a Ração.</p>
+    </div>
+    <div class="card">
+      <h2>🔄 Rebirth</h2>
+      <p class="sub">Ao renascer (Início), você perde todos os animais do zoológico principal, mas ganha um starter novo e um bônus permanente de <b>1.2x renda</b> e <b>1.2x sorte</b>, que se acumula a cada rebirth. Precisa ter pelo menos 5 espécies diferentes para renascer.</p>
+    </div>
+    <div class="card">
+      <h2>🎯 Missões &amp; 🎟️ Códigos</h2>
+      <p class="sub">Missões dão recompensas por metas (moedas coletadas, gachas comprados, shinies encontrados, etc.) e se renovam sozinhas. Códigos são resgatados uma única vez cada, na aba própria.</p>
+    </div>
+    <div class="card">
+      <h2>⚽ Evento Copa do Mundo</h2>
+      <p class="sub">Sistema separado: jogue pênaltis para ganhar Bolas de Ouro e troque por seleções exclusivas no Estádio. Essas seleções não sofrem com fome e ficam para sempre, mesmo depois do evento acabar.</p>
+    </div>
+    <div class="card">
+      <h2>🏆 Ranking &amp; 🤝 Trocas</h2>
+      <p class="sub">Seu apelido identifica você para outros jogadores. Na aba Ranking você compara moedas, espécies, shinies e rebirths com todo mundo. Na aba Trocas você publica animais (forma base, sem estrela e sem shiny) para trocar por moedas ou por outro animal específico — outros jogadores aceitam, e você recolhe o pagamento quando voltar ao jogo.</p>
+    </div>
+  </div>
+
+  <!-- RANKING -->
+  <div class="tabpanel" id="tab-ranking">
+    <div class="card">
+      <h2>🏆 Ranking de Jogadores</h2>
+      <p class="sub">Comparação com todos os jogadores que já publicaram seus dados.</p>
+      <button class="btn-ghost btn-sm" id="refreshRanking">🔄 Atualizar</button>
+      <div id="rankingList" style="margin-top:12px;"><p class="note">Abra esta aba para carregar o ranking.</p></div>
+    </div>
+  </div>
+
+  <!-- TROCAS -->
+  <div class="tabpanel" id="tab-trades">
+    <div class="card">
+      <h2>📤 Publicar Oferta</h2>
+      <p class="sub">Apenas animais na forma base (sem estrela, sem shiny) podem ser negociados.</p>
+      <label style="font-size:0.8rem;font-weight:700;">Oferecer:</label>
+      <select id="tradeOfferSpecies"></select>
+      <label style="font-size:0.8rem;font-weight:700;">Em troca de:</label>
+      <select id="tradeWantType">
+        <option value="coins">Moedas</option>
+        <option value="species">Outro animal específico</option>
+      </select>
+      <input id="tradeWantCoins" type="number" min="1" placeholder="Preço em moedas" style="width:100%;padding:9px;border-radius:10px;border:2px solid var(--forest-deep);margin-top:6px;font-family:'Nunito',sans-serif;font-weight:700;">
+      <select id="tradeWantSpecies" class="hidden"></select>
+      <button class="btn-primary" id="createOfferBtn" style="margin-top:10px;width:100%;">Publicar Oferta</button>
+    </div>
+    <div class="card">
+      <h2>🗂️ Minhas Ofertas</h2>
+      <div id="myOffersList"><p class="note">Nenhuma oferta publicada ainda.</p></div>
+    </div>
+    <div class="card">
+      <h2>🛍️ Mercado de Outros Jogadores</h2>
+      <button class="btn-ghost btn-sm" id="refreshMarket">🔄 Atualizar</button>
+      <div id="marketList" style="margin-top:12px;"><p class="note">Abra esta aba para carregar as ofertas.</p></div>
+    </div>
+    <div class="card">
+      <h2>📋 Histórico de Trocas</h2>
+      <div class="flee-log" id="tradeLogWrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Nickname modal -->
+<div class="overlay hidden" id="nickOverlay">
+  <div class="modal">
+    <h2>Como podemos te chamar?</h2>
+    <p>Escolha um apelido para aparecer no ranking e nas trocas com outros jogadores.</p>
+    <input id="nickInput" placeholder="Seu apelido" maxlength="16" style="width:100%;padding:11px;border-radius:10px;border:2px solid var(--forest-deep);font-family:'Nunito',sans-serif;font-weight:700;margin-top:10px;text-align:center;">
+    <button class="btn-primary" id="nickBtn" style="margin-top:12px;width:100%;">Confirmar</button>
+    <p class="note">Isso fica salvo junto com seu progresso.</p>
+  </div>
+</div>
+
+<!-- Starter modal -->
+<div class="overlay" id="starterOverlay">
+  <div class="modal">
+    <h2>Bem-vindo ao ZooGacha!</h2>
+    <p>Escolha seu animal inicial:</p>
+    <div class="starter-choices">
+      <button data-starter="c1">🐟<span>Peixinho</span></button>
+      <button data-starter="u1">😽<span>Gato</span></button>
+      <button data-starter="u2">🐕<span>Cachorro</span></button>
+    </div>
+    <p class="note">Colete moedas, gire o gacha, cuide da fome dos seus animais, evolua-os e complete missões!</p>
+  </div>
+</div>
+
+
+<script>
+/* =========================================================
+   DATA
+========================================================= */
+const SPECIES = [
+  {id:'c1',name:'Peixinho',emoji:'🐟',rarity:'common',income:0.4},
+  {id:'c2',name:'Coelho',emoji:'🐰',rarity:'common',income:0.5},
+  {id:'c3',name:'Galinha',emoji:'🐔',rarity:'common',income:0.5},
+  {id:'c4',name:'Porquinho',emoji:'🐷',rarity:'common',income:0.6},
+  {id:'c5',name:'Ovelha',emoji:'🐑',rarity:'common',income:0.6},
+  {id:'u1',name:'Gato',emoji:'😽',rarity:'uncommon',income:1.2},
+  {id:'u2',name:'Cachorro',emoji:'🐕',rarity:'uncommon',income:1.3},
+  {id:'u3',name:'Cabra',emoji:'🐐',rarity:'uncommon',income:1.4},
+  {id:'u4',name:'Pato',emoji:'🦆',rarity:'uncommon',income:1.2},
+  {id:'u5',name:'Vaca',emoji:'🐄',rarity:'uncommon',income:1.6},
+  {id:'r1',name:'Panda',emoji:'🐼',rarity:'rare',income:3.5},
+  {id:'r2',name:'Coala',emoji:'🐨',rarity:'rare',income:3.2},
+  {id:'r3',name:'Raposa',emoji:'🦊',rarity:'rare',income:3.8},
+  {id:'e1',name:'Tigre Branco',emoji:'🐯',rarity:'epic',income:8},
+  {id:'e2',name:'Unicórnio',emoji:'🦄',rarity:'epic',income:9},
+  {id:'e3',name:'Rinoceronte Blindado',emoji:'🦏',rarity:'epic',income:8.5},
+  {id:'l1',name:'Leão',emoji:'🦁',rarity:'legendary',income:14},
+  {id:'l2',name:'Dragão',emoji:'🐉',rarity:'legendary',income:18},
+  {id:'l3',name:'Grifo',emoji:'🦅',rarity:'legendary',income:16},
+  {id:'m1',name:'Fênix',emoji:'🔥',rarity:'mythic',income:40},
+  {id:'m2',name:'Kraken',emoji:'🐙',rarity:'mythic',income:45},
+  {id:'s1',name:'Yeti das Neves',emoji:'🥶',rarity:'secret',income:80},
+  {id:'s2',name:'Sombra Ancestral',emoji:'🌑',rarity:'secret',income:90},
+  {id:'d1',name:'Deidade Zoológica',emoji:'👑',rarity:'divine',income:300},
+];
+const RARITY_WEIGHT = {common:55, uncommon:30, rare:25, epic:20, legendary:5, mythic:1, secret:0.5, divine:0.1};
+const RARITY_LABEL = {common:'Comum', uncommon:'Incomum', rare:'Raro', epic:'Épico', legendary:'Lendário', mythic:'Mítico', secret:'Secreto', divine:'Divino'};
+const RARITY_COLOR = {common:'#8FA98F', uncommon:'#4C93C9', rare:'#A45AC9', epic:'#D9662C', legendary:'#DDA92E', mythic:'#D63A4A', secret:'#5B4B8A', divine:'#E0B93C'};
+const SHINY_CHANCE_BY_RARITY = {common:0.20, uncommon:0.18, rare:0.17, epic:0.15, legendary:0.15, mythic:0.10, secret:0.05, divine:0.01};
+const STAR_MULT = [1,2,3,4];
+const STAR_ICON = ['', '⭐', '⭐⭐', '⭐⭐⭐'];
+const SHINY_MULT = 2;
+const GROWTH = 1.12;
+const BASE_COST = 300;
+const STORAGE_KEY = 'zoogacha:state';
+
+/* Passives: rolled per-species on first capture.
+   Tier weights include 'none' (chance of no passive at all). */
+const PASSIVE_TIER_WEIGHT = {none:20, common:35, uncommon:30, rare:25, epic:20, legendary:15, mythic:10, secret:5, divine:1};
+const PASSIVE_POOL = {
+  common:[
+    {id:'medalhista1',name:'Medalhista I',desc:'+2% renda total'},
+  ],
+  uncommon:[
+    {id:'medalhista2',name:'Medalhista II',desc:'+4% renda total'},
+    {id:'explorador',name:'Explorador',desc:'+50% de tempo de renda offline'},
+  ],
+  rare:[
+    {id:'sorte1',name:'Sorte I',desc:'+3% chance de shiny'},
+    {id:'clicador1',name:'Clicador I',desc:'+8% moedas na coleta manual'},
+    {id:'burro',name:'Burro',desc:'-5% renda, +8% chance de shiny'},
+    {id:'sniper',name:'Sniper',desc:'+4% chance de raridades altas no gacha'},
+  ],
+  epic:[
+    {id:'sorte2',name:'Sorte II',desc:'+6% chance de shiny'},
+    {id:'covarde',name:'Covarde',desc:'Foge bem mais rápido quando com fome'},
+    {id:'pechinchador',name:'Pechinchador',desc:'-8% custo de gacha'},
+    {id:'clicador2',name:'Clicador II',desc:'+15% moedas na coleta manual'},
+    {id:'genio',name:'Gênio',desc:'Evolui com 2 cópias em vez de 3'},
+    {id:'lider1',name:'Líder I',desc:'+8% renda total'},
+    {id:'maldicao',name:'Maldição',desc:'-10% renda, +12% chance de shiny'},
+    {id:'leal',name:'Leal',desc:'Nunca foge por fome'},
+  ],
+  legendary:[
+    {id:'sorte3',name:'Sorte III',desc:'+10% chance de shiny'},
+    {id:'clicador3',name:'Clicador III',desc:'+25% moedas na coleta manual'},
+    {id:'lider2',name:'Líder II',desc:'+15% renda total'},
+    {id:'fantasma',name:'Fantasma',desc:'50% de chance de não fugir ao ficar com fome'},
+    {id:'efeitomanada',name:'Efeito Manada',desc:'+1% renda por espécie diferente coletada'},
+    {id:'preguicoso',name:'Preguiçoso',desc:'-15% renda, fica com fome 50% mais devagar'},
+    {id:'saqueador',name:'Saqueador',desc:'+15% recompensas de missões'},
+  ],
+  mythic:[
+    {id:'resiliente',name:'Resiliente',desc:'Nunca foge, fica com fome 50% mais devagar'},
+    {id:'lider3',name:'Líder III',desc:'+22% renda total'},
+  ],
+  secret:[
+    {id:'enigma',name:'Enigma',desc:'+10% renda e +8% chance de shiny (passiva secreta)'},
+  ],
+  divine:[
+    {id:'anjoguarda',name:'Anjo da Guarda',desc:'Protege TODOS os animais contra fome, +5% renda'},
+  ],
+};
+
+const SHOP_PERMANENT = [
+  {id:'upg_income',name:'Expansão de Terreno',desc:'+10% renda permanente',costType:'gems',cost:30,growth:1.6,maxLevel:5},
+  {id:'upg_luck',name:'Amuleto da Sorte',desc:'+3% chance de shiny',costType:'gems',cost:40,growth:1.8,maxLevel:3},
+  {id:'upg_cheap',name:'Negociação Hábil',desc:'-5% custo de gacha',costType:'gems',cost:35,growth:1.7,maxLevel:3},
+  {id:'extraSlot',name:'Mais um Slot de Animal',desc:'+1 espécie simultânea no zoológico',costType:'coins',cost:1000,growth:1.35,maxLevel:14},
+];
+const SHOP_CONSUMABLE = [
+  {id:'boost_energy',name:'Poção de Energia',desc:'2x renda por 5 minutos',costType:'coins',cost:500,duration:300},
+  {id:'boost_luck',name:'Chip da Sorte',desc:'Próximos 5 gachas com raridade melhorada',costType:'gems',cost:15,uses:5},
+  {id:'boost_fill',name:'Ração Dourada',desc:'Preenche a piscina com 60s de renda',costType:'coins',cost:800,fillSeconds:60},
+  {id:'racao',name:'Ração',desc:'Alimenta 1 animal e evita que fuja',costType:'coins',cost:80,isInventoryItem:true},
+];
+
+const MISSION_TEMPLATES = [
+  {icon:'🪙',label:n=>'Acumule '+n+' moedas coletadas no total',statFn:()=>state.totalCollected,baseTarget:500,growth:1.8,reward:t=>({coins:Math.round(300*Math.pow(1.6,t-1))})},
+  {icon:'🎲',label:n=>'Compre '+n+' gachas',statFn:()=>state.gachaPulls,baseTarget:5,growth:1.6,reward:t=>({gems:Math.round(8*Math.pow(1.4,t-1))})},
+  {icon:'✨',label:n=>'Encontre '+n+' animais shiny',statFn:()=>totalShinyCount(),baseTarget:1,growth:1.7,reward:t=>({gems:Math.round(15*Math.pow(1.4,t-1))})},
+  {icon:'🐾',label:n=>'Colecione '+n+' espécies diferentes',statFn:()=>ownedCount(),baseTarget:5,growth:1.5,reward:t=>({coins:Math.round(500*Math.pow(1.5,t-1))})},
+];
+
+const CODES = {
+  'ZOOGACHA2026':{coins:1000,gems:10},
+  'BEMVINDO':{coins:500},
+  'SHINYHUNT':{gems:20},
+  'PANDAFOFO':{coins:300,gems:5},
+  'COPADOMUNDO':{bolas:30},
+};
+
+const EVENT_SPECIES = [
+  {id:'ev1',name:'Canarinho Real',emoji:'🐦🇧🇷',rarity:'common',income:2.5},
+  {id:'ev2',name:'Touro Pampa',emoji:'🐂🇦🇷',rarity:'common',income:2.5},
+  {id:'ev3',name:'Águia Gaulesa',emoji:'🦅🇫🇷',rarity:'uncommon',income:4},
+  {id:'ev4',name:'Leão Britânico',emoji:'🦁🏴',rarity:'rare',income:6.5},
+  {id:'ev5',name:'Panda Dourado',emoji:'🐼⚽',rarity:'legendary',income:11},
+  {id:'ev6',name:'Fênix da Copa',emoji:'🔥🏆',rarity:'legendary',income:16},
+];
+const EVENT_GACHA_BASE_COST = 50;
+const EVENT_GACHA_GROWTH = 1.10;
+const EVENT_END = new Date('2026-07-19T23:00:00-04:00').getTime();
+const EVENT_MISSION_TEMPLATES = [
+  {icon:'⚽',label:n=>'Marque '+n+' gols nos pênaltis',statFn:()=>state.eventGoals,baseTarget:5,growth:1.6,reward:t=>({bolas:Math.round(10*Math.pow(1.4,t-1))})},
+  {icon:'🎟️',label:n=>'Convoque '+n+' seleções no gacha da Copa',statFn:()=>state.eventGachaPulls,baseTarget:3,growth:1.6,reward:t=>({gems:Math.round(6*Math.pow(1.4,t-1))})},
+  {icon:'🏆',label:n=>'Colecione '+n+' seleções diferentes',statFn:()=>ownedEventCount(),baseTarget:2,growth:1.4,reward:t=>({coins:Math.round(400*Math.pow(1.5,t-1))})},
+];
+
+/* =========================================================
+   STATE
+========================================================= */
+let state = {
+  coins:0, gems:0, bolas:0, pool:0,
+  animals:{}, shiny:{}, animalPassives:{}, lastFed:{},
+  totalCollected:0, gachaPulls:0,
+  autoCollect:false, startAnimal:null, lastActive:Date.now(),
+  items:{permanent:{}, activeBoosts:{energyExpiry:0, gachaLuckUses:0}},
+  inventory:{racao:0},
+  missions:[{tpl:0,tier:1},{tpl:1,tier:1},{tpl:2,tier:1}],
+  redeemedCodes:[],
+  eventAnimals:{}, eventGoals:0, eventGachaPulls:0, eventPenaltyAttempts:0,
+  eventMissions:[{tpl:0,tier:1},{tpl:1,tier:1},{tpl:2,tier:1}],
+  rebirths:0, fleeLog:[],
+  nick:null, playerId:null, myOffers:[], tradeLog:[]
+};
+
+/* =========================================================
+   HELPERS
+========================================================= */
+function speciesById(id){ return SPECIES.find(s=>s.id===id); }
+function ensureArr(map,id){ if(!map[id]) map[id]=[0,0,0,0]; return map[id]; }
+function getStars(map,id){ return map[id]||[0,0,0,0]; }
+function totalOwned(id){ const a=getStars(state.animals,id), s=getStars(state.shiny,id); return a.reduce((x,y)=>x+y,0)+s.reduce((x,y)=>x+y,0); }
+function totalShinyOf(id){ return getStars(state.shiny,id).reduce((x,y)=>x+y,0); }
+function ownedCount(){ return SPECIES.filter(sp=>totalOwned(sp.id)>0).length; }
+function totalShinyCount(){ return SPECIES.reduce((sum,sp)=>sum+totalShinyOf(sp.id),0); }
+function ownedEventCount(){ return Object.values(state.eventAnimals).filter(c=>c>0).length; }
+function findPassiveDef(id){ if(!id) return null; for(const tier in PASSIVE_POOL){ const f=PASSIVE_POOL[tier].find(p=>p.id===id); if(f) return Object.assign({tier}, f); } return null; }
+function passiveOf(speciesId){ return findPassiveDef(state.animalPassives[speciesId]); }
+function zooCapacity(){ return Math.min(SPECIES.length, 10 + (state.items.permanent.extraSlot||0)); }
+function rebirthMult(){ return Math.pow(1.2, state.rebirths); }
+
+function rollPassive(){
+  let pool=[];
+  for(const tier in PASSIVE_TIER_WEIGHT){ pool.push({tier, w:PASSIVE_TIER_WEIGHT[tier]}); }
+  const totalW = pool.reduce((s,p)=>s+p.w,0);
+  let roll = Math.random()*totalW;
+  let chosenTier='none';
+  for(const p of pool){ if(roll<p.w){ chosenTier=p.tier; break; } roll-=p.w; }
+  if(chosenTier==='none') return null;
+  const list = PASSIVE_POOL[chosenTier];
+  return list[Math.floor(Math.random()*list.length)].id;
+}
+
+/* Aggregate all passive effects from owned species */
+function computeAggregate(){
+  const agg = {income:0, shiny:0, gachaCost:0, manualCollect:0, rarityBoost:0, offline:0, missionReward:0, herdActive:false, anjoActive:false};
+  SPECIES.forEach(sp=>{
+    if(totalOwned(sp.id)<=0) return;
+    const p = passiveOf(sp.id);
+    if(!p) return;
+    switch(p.id){
+      case 'medalhista1': agg.income+=0.02; break;
+      case 'medalhista2': agg.income+=0.04; break;
+      case 'explorador': agg.offline+=0.5; break;
+      case 'sorte1': agg.shiny+=0.03; break;
+      case 'sorte2': agg.shiny+=0.06; break;
+      case 'sorte3': agg.shiny+=0.10; break;
+      case 'clicador1': agg.manualCollect+=0.08; break;
+      case 'clicador2': agg.manualCollect+=0.15; break;
+      case 'clicador3': agg.manualCollect+=0.25; break;
+      case 'burro': agg.income-=0.05; agg.shiny+=0.08; break;
+      case 'sniper': agg.rarityBoost+=0.04; break;
+      case 'pechinchador': agg.gachaCost+=0.08; break;
+      case 'lider1': agg.income+=0.08; break;
+      case 'lider2': agg.income+=0.15; break;
+      case 'lider3': agg.income+=0.22; break;
+      case 'maldicao': agg.income-=0.10; agg.shiny+=0.12; break;
+      case 'efeitomanada': agg.herdActive=true; break;
+      case 'preguicoso': agg.income-=0.15; break;
+      case 'saqueador': agg.missionReward+=0.15; break;
+      case 'enigma': agg.income+=0.10; agg.shiny+=0.08; break;
+      case 'anjoguarda': agg.anjoActive=true; agg.income+=0.05; break;
+    }
+  });
+  if(agg.herdActive) agg.income += ownedCount()*0.01;
+  return agg;
+}
+
+function permanentLevel(id){ return state.items.permanent[id]||0; }
+function permanentIncomeBonus(){ return permanentLevel('upg_income')*0.10; }
+function permanentShinyBonus(){ return permanentLevel('upg_luck')*0.03; }
+function permanentGachaCostReduction(){ return permanentLevel('upg_cheap')*0.05; }
+function energyBoostActive(){ return state.items.activeBoosts.energyExpiry > Date.now(); }
+
+function speciesIncome(sp){
+  const a = getStars(state.animals, sp.id);
+  const s = getStars(state.shiny, sp.id);
+  let inc=0;
+  for(let t=0;t<4;t++){
+    inc += a[t]*sp.income*STAR_MULT[t];
+    inc += s[t]*sp.income*STAR_MULT[t]*SHINY_MULT;
+  }
+  return inc;
+}
+function eventSpeciesIncome(sp){
+  const c = state.eventAnimals[sp.id]||0;
+  return c>0 ? sp.income*c : 0;
+}
+function baseIncomePerSec(){
+  let total=0;
+  SPECIES.forEach(sp=> total+=speciesIncome(sp));
+  EVENT_SPECIES.forEach(sp=> total+=eventSpeciesIncome(sp));
+  return total;
+}
+function currentIncomePerSec(){
+  let total = baseIncomePerSec();
+  const agg = computeAggregate();
+  let mult = 1 + agg.income + permanentIncomeBonus();
+  mult *= rebirthMult();
+  total *= mult;
+  if(energyBoostActive()) total *= 2;
+  return total;
+}
+function currentGachaCost(){
+  const agg = computeAggregate();
+  const reduction = Math.min(agg.gachaCost + permanentGachaCostReduction(), 0.5);
+  const raw = BASE_COST * Math.pow(GROWTH, state.gachaPulls);
+  return Math.max(50, Math.round(raw*(1-reduction)));
+}
+function manualCollectBonus(){ return computeAggregate().manualCollect; }
+function shinyChanceFor(rarity){
+  const agg = computeAggregate();
+  const base = SHINY_CHANCE_BY_RARITY[rarity];
+  const total = (base + agg.shiny + permanentShinyBonus()) * rebirthMult();
+  return Math.min(0.9, total);
+}
+function missionRewardMult(){ return 1+computeAggregate().missionReward; }
+function offlineCapHours(){ return 3*(1+computeAggregate().offline); }
+
+function computeGachaWeights(){
+  const agg = computeAggregate();
+  const w = Object.assign({}, RARITY_WEIGHT);
+  const boost = (1+agg.rarityBoost) * rebirthMult() * (state.items.activeBoosts.gachaLuckUses>0 ? 1.8 : 1);
+  ['rare','epic','legendary','mythic','secret','divine'].forEach(t=> w[t]*=boost);
+  return w;
+}
+function pickGacha(){
+  const w = computeGachaWeights();
+  const tiers = ['common','uncommon','rare','epic','legendary','mythic','secret','divine'];
+  const totalW = tiers.reduce((s,t)=>s+w[t],0);
+  let roll = Math.random()*totalW;
+  let rarity = 'common';
+  for(const t of tiers){ if(roll<w[t]){ rarity=t; break; } roll-=w[t]; }
+  if(state.items.activeBoosts.gachaLuckUses>0) state.items.activeBoosts.gachaLuckUses--;
+  const list = SPECIES.filter(s=>s.rarity===rarity);
+  const sp = list[Math.floor(Math.random()*list.length)];
+  const isShiny = Math.random() < shinyChanceFor(rarity);
+  return {sp, isShiny};
+}
+function pickEventGacha(){
+  const weights = RARITY_WEIGHT;
+  const totalW = weights.common+weights.uncommon+weights.rare+weights.legendary;
+  const roll = Math.random()*totalW;
+  let rarity;
+  if(roll < weights.legendary) rarity='legendary';
+  else if(roll < weights.legendary+weights.rare) rarity='rare';
+  else if(roll < weights.legendary+weights.rare+weights.uncommon) rarity='uncommon';
+  else rarity='common';
+  const list = EVENT_SPECIES.filter(s=>s.rarity===rarity);
+  return list[Math.floor(Math.random()*list.length)];
+}
+function eventCountdownText(){
+  const diff = EVENT_END - Date.now();
+  if(diff<=0) return '🏁 Evento encerrado — suas seleções e Bolas continuam valendo!';
+  const days = Math.floor(diff/86400000);
+  const hours = Math.floor((diff%86400000)/3600000);
+  return '🗓️ Termina em '+days+'d '+hours+'h';
+}
+
+/* ---- Hunger / fleeing ---- */
+function hungerParams(speciesId){
+  const p = passiveOf(speciesId);
+  let hungerMult=1, fleeMult=1, immune=false;
+  if(p){
+    if(p.id==='preguicoso' || p.id==='resiliente') hungerMult=0.5;
+    if(p.id==='covarde') fleeMult=1.6;
+    if(p.id==='leal' || p.id==='resiliente') immune=true;
+  }
+  return {hungerMult, fleeMult, immune};
+}
+function isAnjoActive(){ return computeAggregate().anjoActive; }
+function addFleeLog(msg){
+  state.fleeLog.unshift(new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' — '+msg);
+  state.fleeLog = state.fleeLog.slice(0,10);
+}
+function getHungerInfo(speciesId){
+  const {hungerMult, fleeMult, immune} = hungerParams(speciesId);
+  if(immune || isAnjoActive()) return {immune:true, status:'🛡️ Protegido contra fome'};
+  const lastFed = state.lastFed[speciesId] || Date.now();
+  const hungryAt = lastFed + (24/hungerMult)*3600000;
+  const fleeAt = hungryAt + (3/fleeMult)*3600000;
+  const now = Date.now();
+  if(now < hungryAt) return {immune:false, status:'😊 Bem alimentado'};
+  const hoursLeft = ((fleeAt-now)/3600000).toFixed(1);
+  return {immune:false, status:'😟 Com fome! Foge em ~'+hoursLeft+'h se não for alimentado'};
+}
+function checkHunger(){
+  const anjo = isAnjoActive();
+  SPECIES.forEach(sp=>{
+    if(totalOwned(sp.id)<=0) return;
+    const {hungerMult, fleeMult, immune} = hungerParams(sp.id);
+    if(immune || anjo) return;
+    const lastFed = state.lastFed[sp.id] || Date.now();
+    const hungryAt = lastFed + (24/hungerMult)*3600000;
+    const fleeAt = hungryAt + (3/fleeMult)*3600000;
+    if(Date.now() >= fleeAt){
+      const p = passiveOf(sp.id);
+      if(p && p.id==='fantasma' && Math.random()<0.5){
+        state.lastFed[sp.id] = Date.now();
+        addFleeLog('👻 '+sp.name+' quase fugiu, mas o Fantasma o protegeu!');
+      } else {
+        state.animals[sp.id]=[0,0,0,0]; state.shiny[sp.id]=[0,0,0,0];
+        delete state.animalPassives[sp.id]; delete state.lastFed[sp.id];
+        addFleeLog('🏃 '+sp.name+' fugiu do zoológico por fome!');
+      }
+    }
+  });
+}
+
+/* =========================================================
+   PERSISTENCE
+========================================================= */
+function migrateAnimalMap(map){
+  const out={};
+  for(const id in map){
+    const v=map[id];
+    if(Array.isArray(v)) out[id]=v;
+    else if(typeof v==='number') out[id]=[v,0,0,0];
+  }
+  return out;
+}
+async function saveState(){
+  state.lastActive = Date.now();
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+    document.getElementById('saveNote').textContent = 'Progresso salvo automaticamente.';
+  }catch(e){ document.getElementById('saveNote').textContent = 'Não foi possível salvar agora.'; }
+}
+async function loadState(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY);
+    if(res && res.value){
+      const loaded = JSON.parse(res.value);
+      state = Object.assign(state, loaded);
+      state.items = Object.assign({permanent:{}, activeBoosts:{energyExpiry:0, gachaLuckUses:0}}, loaded.items||{});
+      state.items.activeBoosts = Object.assign({energyExpiry:0, gachaLuckUses:0}, (loaded.items||{}).activeBoosts||{});
+      state.inventory = Object.assign({racao:0}, loaded.inventory||{});
+      state.missions = loaded.missions || state.missions;
+      state.eventMissions = loaded.eventMissions || state.eventMissions;
+      state.redeemedCodes = loaded.redeemedCodes || [];
+      state.eventAnimals = loaded.eventAnimals || {};
+      state.animals = migrateAnimalMap(loaded.animals||{});
+      state.shiny = migrateAnimalMap(loaded.shiny||{});
+      state.animalPassives = loaded.animalPassives || {};
+      state.lastFed = loaded.lastFed || {};
+      state.fleeLog = loaded.fleeLog || [];
+      state.rebirths = loaded.rebirths || 0;
+      checkHunger();
+      const elapsedSec = Math.min((Date.now() - (state.lastActive||Date.now()))/1000, offlineCapHours()*3600);
+      if(elapsedSec > 2){ state.pool += elapsedSec * currentIncomePerSec(); }
+    }
+  }catch(e){ /* no saved state yet */ }
+}
+
+/* =========================================================
+   RENDER
+========================================================= */
+function render(){
+  document.getElementById('statCoins').textContent = Math.floor(state.coins);
+  document.getElementById('statGems').textContent = Math.floor(state.gems);
+  document.getElementById('statBolas').textContent = Math.floor(state.bolas);
+  document.getElementById('statAnimals').textContent = ownedCount()+'/'+SPECIES.length;
+  document.getElementById('statIncome').textContent = currentIncomePerSec().toFixed(1)+'/s';
+  document.getElementById('poolAmount').textContent = Math.floor(state.pool);
+  document.getElementById('gachaCost').textContent = 'Custo: '+currentGachaCost()+' moedas';
+  document.getElementById('gachaBtn').textContent = 'Comprar Gacha ('+currentGachaCost()+' moedas)';
+  document.getElementById('gachaBtn').disabled = state.coins < currentGachaCost();
+  document.getElementById('gachaNext').textContent = ownedCount()>=zooCapacity()
+    ? '⚠️ Zoológico cheio: novas espécies serão reembolsadas em 50%'
+    : 'Aumento por compra: '+Math.round((GROWTH-1)*100)+'%';
+  document.getElementById('autoToggle').checked = !!state.autoCollect;
+  document.getElementById('rebirthCount').textContent = state.rebirths;
+  document.getElementById('rebirthBonus').textContent = rebirthMult().toFixed(2)+'×';
+  document.getElementById('rebirthBtn').disabled = ownedCount() < 5;
+
+  const banner = document.getElementById('boostBanner');
+  const bits = [];
+  if(energyBoostActive()){
+    const secs = Math.max(0, Math.round((state.items.activeBoosts.energyExpiry-Date.now())/1000));
+    bits.push('⚡ Poção de Energia ativa (2x renda) — '+Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0')+' restante');
+  }
+  if(state.items.activeBoosts.gachaLuckUses>0){
+    bits.push('🍀 Chip da Sorte: '+state.items.activeBoosts.gachaLuckUses+' gacha(s) com raridade melhorada');
+  }
+  if(bits.length){ banner.classList.remove('hidden'); banner.innerHTML = bits.join('<br>'); }
+  else banner.classList.add('hidden');
+
+  document.getElementById('statNick').textContent = state.nick || '—';
+
+  renderZoo();
+  renderPetList();
+  renderPassiveCatalog();
+  renderShop();
+  renderSwapUI();
+  renderInventory();
+  renderMissions();
+  document.getElementById('redeemedCount').textContent = state.redeemedCodes.length;
+  renderEventTab();
+  renderTradeForm();
+  renderMyOffers();
+}
+
+function renderZoo(){
+  document.getElementById('capacityText').textContent = ownedCount()+'/'+SPECIES.length+' espécies · slots: '+ownedCount()+'/'+zooCapacity();
+  const field = document.getElementById('zooField');
+  field.innerHTML = '';
+  SPECIES.forEach(sp=>{
+    const a=getStars(state.animals,sp.id), s=getStars(state.shiny,sp.id);
+    const owned = totalOwned(sp.id);
+    const maxStar = Math.max(a.map((v,i)=>v>0?i:0).reduce((x,y)=>Math.max(x,y),0), s.map((v,i)=>v>0?i:0).reduce((x,y)=>Math.max(x,y),0));
+    const slot = document.createElement('div');
+    slot.className = 'slot rarity-'+sp.rarity + (owned>0?'':' locked') + (totalShinyOf(sp.id)>0?' has-shiny':'');
+    let html='';
+    if(owned>0){
+      if(maxStar>0) html += '<span class="star">'+STAR_ICON[maxStar]+'</span>';
+      if(totalShinyOf(sp.id)>0) html += '<span class="shinytag">✨</span>';
+      html += '<span class="emoji">'+sp.emoji+'</span><span class="name">'+sp.name+'</span>';
+    } else {
+      html = '<span class="emoji">❔</span><span class="name">???</span>';
+    }
+    slot.innerHTML = html;
+    field.appendChild(slot);
+  });
+}
+
+function renderPetList(){
+  const wrap = document.getElementById('petList');
+  wrap.innerHTML='';
+  const owned = SPECIES.filter(sp=>totalOwned(sp.id)>0);
+  if(owned.length===0){ wrap.innerHTML='<p class="note">Você ainda não tem animais.</p>'; }
+  owned.forEach(sp=>{
+    const a=getStars(state.animals,sp.id), s=getStars(state.shiny,sp.id);
+    const p = passiveOf(sp.id);
+    const hunger = getHungerInfo(sp.id);
+    const need = (p && p.id==='genio') ? 2 : 3;
+    let countsHtml = 'Normal — Base:'+a[0]+' ⭐:'+a[1]+' ⭐⭐:'+a[2]+' ⭐⭐⭐:'+a[3];
+    if(s.reduce((x,y)=>x+y,0)>0){
+      countsHtml += '<br><span class="shiny-gold">✨ '+sp.name+' (shiny) — Base:'+s[0]+' ⭐:'+s[1]+' ⭐⭐:'+s[2]+' ⭐⭐⭐:'+s[3]+'</span>';
+    }
+    let actions = '';
+    if(!hunger.immune){
+      actions += '<button class="btn-secondary btn-sm" data-feed="'+sp.id+'" '+(state.inventory.racao<=0?'disabled':'')+'>🍖 Alimentar</button>';
+    }
+    for(let t=0;t<3;t++){
+      if(a[t]>=need) actions += '<button class="btn-primary btn-sm" data-evolve="'+sp.id+'|0|'+t+'">Evoluir '+STAR_ICON[t+1]+' ('+need+'x)</button>';
+      if(s[t]>=need) actions += '<button class="btn-primary btn-sm" data-evolve="'+sp.id+'|1|'+t+'">Evoluir ✨'+STAR_ICON[t+1]+' ('+need+'x)</button>';
+    }
+    actions += '<button class="btn-ghost btn-sm" data-release="'+sp.id+'">🕊️ Libertar</button>';
+    const div = document.createElement('div');
+    div.className='pet-card';
+    div.style.borderColor = RARITY_COLOR[sp.rarity];
+    div.innerHTML = '<div class="pet-head">'+sp.emoji+' <b>'+sp.name+'</b><span class="tag" style="background:'+RARITY_COLOR[sp.rarity]+'">'+RARITY_LABEL[sp.rarity]+'</span></div>'+
+      '<div class="pet-counts">'+countsHtml+'</div>'+
+      '<div class="pet-passive">'+(p? '⚡ <b>'+p.name+'</b> — '+p.desc : 'Sem passiva')+'</div>'+
+      '<div class="pet-hunger">'+hunger.status+'</div>'+
+      '<div class="pet-actions">'+actions+'</div>';
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('[data-feed]').forEach(b=>b.addEventListener('click', ()=>feedAnimal(b.getAttribute('data-feed'))));
+  wrap.querySelectorAll('[data-release]').forEach(b=>b.addEventListener('click', ()=>releaseAnimal(b.getAttribute('data-release'))));
+  wrap.querySelectorAll('[data-evolve]').forEach(b=>b.addEventListener('click', ()=>{
+    const [id,shinyFlag,star] = b.getAttribute('data-evolve').split('|');
+    evolveAnimal(id, shinyFlag==='1', parseInt(star));
+  }));
+
+  const logWrap = document.getElementById('fleeLog');
+  logWrap.innerHTML = state.fleeLog.length ? state.fleeLog.map(l=>'<div>'+l+'</div>').join('') : '<span style="opacity:0.5;">Nenhum evento recente.</span>';
+}
+
+function renderPassiveCatalog(){
+  const wrap = document.getElementById('passiveCatalog');
+  wrap.innerHTML='';
+  ['common','uncommon','rare','epic','legendary','mythic','secret','divine'].forEach(tier=>{
+    const names = PASSIVE_POOL[tier].map(p=>p.name).join(', ');
+    const div = document.createElement('div');
+    div.className='catalog-tier';
+    div.innerHTML = '<b style="color:'+RARITY_COLOR[tier]+'">'+RARITY_LABEL[tier]+'</b><div class="names">'+names+'</div>';
+    wrap.appendChild(div);
+  });
+}
+
+function renderShop(){
+  const perm = document.getElementById('shopPermanent');
+  perm.innerHTML='';
+  SHOP_PERMANENT.forEach(item=>{
+    const lvl = permanentLevel(item.id);
+    const maxed = lvl>=item.maxLevel;
+    const cost = Math.round(item.cost*Math.pow(item.growth,lvl));
+    const currencyIcon = item.costType==='gems' ? '💎' : '🪙';
+    const div = document.createElement('div');
+    div.className='shop-item';
+    div.innerHTML = '<div class="info"><b>'+item.name+' <span class="lvltag">Nv.'+lvl+'/'+item.maxLevel+'</span></b><span>'+item.desc+'</span></div>'+
+      (maxed ? '<button class="btn-ghost btn-sm" disabled>Máximo</button>' : '<button class="'+(item.costType==='gems'?'btn-gem':'btn-secondary')+' btn-sm" data-buy="'+item.id+'">'+currencyIcon+' '+cost+'</button>');
+    perm.appendChild(div);
+  });
+  const cons = document.getElementById('shopConsumable');
+  cons.innerHTML='';
+  SHOP_CONSUMABLE.forEach(item=>{
+    const currencyIcon = item.costType==='gems' ? '💎' : '🪙';
+    const div = document.createElement('div');
+    div.className='shop-item';
+    let btns = '<button class="btn-secondary btn-sm" data-buy="'+item.id+'">'+currencyIcon+' '+item.cost+'</button>';
+    if(item.id==='racao'){
+      btns += '<button class="btn-secondary btn-sm" data-buy5="'+item.id+'">'+currencyIcon+' '+(item.cost*5)+' (x5)</button>';
+    }
+    div.innerHTML = '<div class="info"><b>'+item.name+'</b><span>'+item.desc+'</span></div>'+btns;
+    cons.appendChild(div);
+  });
+  perm.querySelectorAll('[data-buy]').forEach(b=>b.addEventListener('click', ()=>buyPermanent(b.getAttribute('data-buy'))));
+  cons.querySelectorAll('[data-buy]').forEach(b=>b.addEventListener('click', ()=>buyConsumable(b.getAttribute('data-buy'))));
+  cons.querySelectorAll('[data-buy5]').forEach(b=>b.addEventListener('click', ()=>{ for(let i=0;i<5;i++) buyConsumable(b.getAttribute('data-buy5')); }));
+}
+
+function renderSwapUI(){
+  const owned = SPECIES.filter(sp=>totalOwned(sp.id)>0);
+  const src = document.getElementById('swapSource');
+  const tgt = document.getElementById('swapTarget');
+  const ownedWithPassive = owned.filter(sp=>passiveOf(sp.id));
+  src.innerHTML = ownedWithPassive.length ? ownedWithPassive.map(sp=>'<option value="'+sp.id+'">'+sp.emoji+' '+sp.name+' — '+passiveOf(sp.id).name+'</option>').join('') : '<option value="">Nenhum animal com passiva</option>';
+  tgt.innerHTML = owned.length ? owned.map(sp=>'<option value="'+sp.id+'">'+sp.emoji+' '+sp.name+' (atual: '+(passiveOf(sp.id)?passiveOf(sp.id).name:'nenhuma')+')</option>').join('') : '<option value="">Nenhum animal</option>';
+}
+
+function renderInventory(){
+  document.getElementById('invRacao').textContent = state.inventory.racao||0;
+}
+
+function renderMissions(){
+  const wrap = document.getElementById('missionList');
+  wrap.innerHTML='';
+  state.missions.forEach((m,idx)=>{
+    const tpl = MISSION_TEMPLATES[m.tpl];
+    const target = Math.round(tpl.baseTarget*Math.pow(tpl.growth,m.tier-1));
+    const progress = Math.min(tpl.statFn(), target);
+    const pct = Math.round(progress/target*100);
+    const reward = tpl.reward(m.tier);
+    const rewardText = Object.entries(reward).map(([k,v])=> (k==='coins'?'🪙 '+v:'💎 '+v)).join(' + ');
+    const done = progress>=target;
+    const div = document.createElement('div');
+    div.className='mission';
+    div.innerHTML = '<div class="mission-top"><b>'+tpl.icon+' '+tpl.label(target)+'</b>'+
+      (done ? '<button class="btn-primary btn-sm" data-claim="'+idx+'">Coletar</button>' : '<span style="font-size:0.78rem;opacity:0.7;">'+Math.floor(progress)+'/'+target+'</span>')+
+      '</div><div class="bar-bg"><div class="bar-fill" style="width:'+pct+'%"></div></div>'+
+      '<div class="mission-reward">Recompensa: '+rewardText+'</div>';
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('[data-claim]').forEach(b=>b.addEventListener('click', ()=>claimMission(parseInt(b.getAttribute('data-claim')))));
+}
+
+function renderEventTab(){
+  document.getElementById('eventCountdown').textContent = eventCountdownText();
+  document.getElementById('eventCollected').textContent = ownedEventCount()+'/6 seleções colecionadas';
+  document.getElementById('statGoals').textContent = state.eventGoals;
+  document.getElementById('statAttempts').textContent = state.eventPenaltyAttempts;
+
+  const field = document.getElementById('eventField');
+  field.innerHTML='';
+  EVENT_SPECIES.forEach(sp=>{
+    const count = state.eventAnimals[sp.id]||0;
+    const slot = document.createElement('div');
+    slot.className = 'slot rarity-'+sp.rarity + (count>0?'':' locked');
+    slot.innerHTML = count>0
+      ? '<span class="star" style="left:auto;right:3px;">x'+count+'</span><span class="emoji">'+sp.emoji+'</span><span class="name">'+sp.name+'</span>'
+      : '<span class="emoji">❔</span><span class="name">???</span>';
+    field.appendChild(slot);
+  });
+
+  const cost = currentEventGachaCost();
+  document.getElementById('eventGachaCostLabel').textContent = 'Custo: '+cost+' bolas';
+  document.getElementById('eventGachaBtn').textContent = 'Convocar Seleção (⚽ '+cost+')';
+  document.getElementById('eventGachaBtn').disabled = state.bolas < cost;
+
+  const wrap = document.getElementById('eventMissionList');
+  wrap.innerHTML='';
+  state.eventMissions.forEach((m,idx)=>{
+    const tpl = EVENT_MISSION_TEMPLATES[m.tpl];
+    const target = Math.round(tpl.baseTarget*Math.pow(tpl.growth,m.tier-1));
+    const progress = Math.min(tpl.statFn(), target);
+    const pct = Math.round(progress/target*100);
+    const reward = tpl.reward(m.tier);
+    const rewardText = Object.entries(reward).map(([k,v])=>{
+      if(k==='coins') return '🪙 '+v;
+      if(k==='gems') return '💎 '+v;
+      if(k==='bolas') return '⚽ '+v;
+      return v;
+    }).join(' + ');
+    const done = progress>=target;
+    const div = document.createElement('div');
+    div.className='mission';
+    div.innerHTML = '<div class="mission-top"><b>'+tpl.icon+' '+tpl.label(target)+'</b>'+
+      (done ? '<button class="btn-primary btn-sm" data-claimevent="'+idx+'">Coletar</button>' : '<span style="font-size:0.78rem;opacity:0.7;">'+Math.floor(progress)+'/'+target+'</span>')+
+      '</div><div class="bar-bg"><div class="bar-fill" style="width:'+pct+'%"></div></div>'+
+      '<div class="mission-reward">Recompensa: '+rewardText+'</div>';
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('[data-claimevent]').forEach(b=>b.addEventListener('click', ()=>claimEventMission(parseInt(b.getAttribute('data-claimevent')))));
+}
+function currentEventGachaCost(){
+  return Math.max(15, Math.round(EVENT_GACHA_BASE_COST*Math.pow(EVENT_GACHA_GROWTH, state.eventGachaPulls)));
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+function spawnParticles(color, moundId){
+  const mound = document.getElementById(moundId||'mound');
+  for(let i=0;i<10;i++){
+    const p = document.createElement('div');
+    p.className='particle'; p.style.background=color; p.style.left='75px'; p.style.top='55px';
+    mound.appendChild(p);
+    const angle = Math.random()*Math.PI*2, dist=40+Math.random()*30;
+    const dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist;
+    p.animate([{transform:'translate(0,0)',opacity:1},{transform:'translate('+dx+'px,'+dy+'px)',opacity:0}],{duration:600+Math.random()*300,easing:'ease-out'});
+    setTimeout(()=>p.remove(),950);
+  }
+}
+
+function grantSpecies(sp, isShiny){
+  const isNew = totalOwned(sp.id)===0;
+  if(isNew){
+    if(ownedCount() >= zooCapacity()) return {granted:false};
+    state.animalPassives[sp.id] = rollPassive();
+    state.lastFed[sp.id] = Date.now();
+  }
+  const map = isShiny? state.shiny : state.animals;
+  const arr = ensureArr(map, sp.id);
+  arr[0]+=1;
+  return {granted:true};
+}
+
+async function buyGacha(){
+  const cost = currentGachaCost();
+  if(state.coins < cost) return;
+  state.coins -= cost;
+  state.gachaPulls += 1;
+
+  const mound=document.getElementById('mound'), reveal=document.getElementById('reveal'), btn=document.getElementById('gachaBtn');
+  btn.disabled=true; mound.classList.add('shaking'); reveal.innerHTML='';
+  await new Promise(r=>setTimeout(r,550));
+  mound.classList.remove('shaking');
+
+  const {sp,isShiny} = pickGacha();
+  const result = grantSpecies(sp, isShiny);
+  const color = isShiny? '#FFD54A' : RARITY_COLOR[sp.rarity];
+
+  if(!result.granted){
+    const refund = Math.round(cost*0.5);
+    state.coins += refund;
+    reveal.innerHTML = '<div class="card-anim" style="border-color:'+color+'"><span class="re">'+sp.emoji+'</span><span class="rn">'+sp.name+'</span><span class="rr">Zoológico cheio!</span><span class="rs">🪙 +'+refund+' (reembolso)</span></div>';
+  } else {
+    spawnParticles(color);
+    reveal.innerHTML = '<div class="card-anim" style="border-color:'+color+'">'+
+      '<span class="re">'+sp.emoji+'</span><span class="rn'+(isShiny?' shiny-gold':'')+'">'+sp.name+'</span>'+
+      '<span class="rr" style="color:'+RARITY_COLOR[sp.rarity]+'">'+RARITY_LABEL[sp.rarity]+'</span>'+
+      (isShiny? '<span class="rs">✨ SHINY!</span>' : '')+'</div>';
+  }
+
+  render();
+  await saveState();
+}
+
+function evolveAnimal(speciesId, isShiny, starLevel){
+  const p = passiveOf(speciesId);
+  const need = (p && p.id==='genio') ? 2 : 3;
+  const map = isShiny? state.shiny : state.animals;
+  const arr = ensureArr(map, speciesId);
+  if(starLevel>=3 || arr[starLevel]<need) return;
+  arr[starLevel]-=need;
+  arr[starLevel+1]=(arr[starLevel+1]||0)+1;
+  const sp = speciesById(speciesId);
+  addFleeLog('⭐ '+sp.name+(isShiny?' (shiny)':'')+' evoluiu para '+STAR_ICON[starLevel+1]+'!');
+  render(); saveState();
+}
+
+function feedAnimal(speciesId){
+  if((state.inventory.racao||0)<=0) return;
+  state.inventory.racao -= 1;
+  state.lastFed[speciesId] = Date.now();
+  const sp = speciesById(speciesId);
+  addFleeLog('🍖 Você alimentou '+sp.name+'.');
+  render(); saveState();
+}
+
+function releaseAnimal(speciesId){
+  const sp = speciesById(speciesId);
+  if(!confirm('Libertar '+sp.name+'? Você perde todas as cópias (normais e shiny) dele para abrir um slot no zoológico.')) return;
+  state.animals[speciesId]=[0,0,0,0];
+  state.shiny[speciesId]=[0,0,0,0];
+  delete state.animalPassives[speciesId];
+  delete state.lastFed[speciesId];
+  addFleeLog('🕊️ Você libertou '+sp.name+'.');
+  render(); saveState();
+}
+
+function collectPool(){
+  const bonus = 1+manualCollectBonus();
+  const amount = state.pool*bonus;
+  state.coins += amount;
+  state.totalCollected += amount;
+  state.pool = 0;
+  render(); saveState();
+}
+
+function tick(){
+  state.pool += currentIncomePerSec();
+  if(state.autoCollect && state.pool>0){
+    state.coins += state.pool; state.totalCollected += state.pool; state.pool=0;
+  }
+  checkHunger();
+  render();
+}
+
+async function resetGame(){
+  if(!confirm('Tem certeza que deseja reiniciar seu zoológico? Isso apaga todo o progresso (seu apelido e ofertas de troca são mantidos).')) return;
+  const keepNick = state.nick, keepPlayerId = state.playerId, keepOffers = state.myOffers, keepTradeLog = state.tradeLog;
+  state = {
+    coins:0, gems:0, bolas:0, pool:0, animals:{}, shiny:{}, animalPassives:{}, lastFed:{},
+    totalCollected:0, gachaPulls:0, autoCollect:false, startAnimal:null, lastActive:Date.now(),
+    items:{permanent:{}, activeBoosts:{energyExpiry:0, gachaLuckUses:0}},
+    inventory:{racao:0},
+    missions:[{tpl:0,tier:1},{tpl:1,tier:1},{tpl:2,tier:1}], redeemedCodes:[],
+    eventAnimals:{}, eventGoals:0, eventGachaPulls:0, eventPenaltyAttempts:0,
+    eventMissions:[{tpl:0,tier:1},{tpl:1,tier:1},{tpl:2,tier:1}],
+    rebirths:0, fleeLog:[],
+    nick:keepNick, playerId:keepPlayerId, myOffers:keepOffers, tradeLog:keepTradeLog
+  };
+  await saveState();
+  document.getElementById('reveal').innerHTML='';
+  document.getElementById('reveal2').innerHTML='';
+  document.getElementById('starterOverlay').classList.remove('hidden');
+  render();
+}
+
+async function doRebirth(){
+  if(ownedCount()<5) return;
+  if(!confirm('Renascer? Você perde TODOS os animais do zoológico principal (as seleções da Copa ficam), mas ganha +1.2× renda e +1.2× sorte permanentes, além de um novo starter.')) return;
+  state.rebirths += 1;
+  state.animals = {}; state.shiny = {}; state.animalPassives = {}; state.lastFed = {};
+  const starters = ['c1','u1','u2'];
+  const chosen = starters[Math.floor(Math.random()*starters.length)];
+  state.animalPassives[chosen] = rollPassive();
+  state.lastFed[chosen] = Date.now();
+  ensureArr(state.animals, chosen)[0] = 1;
+  state.startAnimal = chosen;
+  render(); await saveState();
+  alert('Você renasceu! Bônus atual: '+rebirthMult().toFixed(2)+'× renda e sorte.');
+}
+
+function buyPermanent(id){
+  const item = SHOP_PERMANENT.find(i=>i.id===id);
+  const lvl = permanentLevel(id);
+  if(lvl>=item.maxLevel) return;
+  const cost = Math.round(item.cost*Math.pow(item.growth,lvl));
+  if(item.costType==='gems'){ if(state.gems<cost) return; state.gems-=cost; }
+  else{ if(state.coins<cost) return; state.coins-=cost; }
+  state.items.permanent[id] = lvl+1;
+  render(); saveState();
+}
+
+function buyConsumable(id){
+  const item = SHOP_CONSUMABLE.find(i=>i.id===id);
+  if(item.costType==='gems'){ if(state.gems<item.cost) return; state.gems-=item.cost; }
+  else{ if(state.coins<item.cost) return; state.coins-=item.cost; }
+
+  if(id==='boost_energy'){
+    const now=Date.now();
+    const base = energyBoostActive()? state.items.activeBoosts.energyExpiry : now;
+    state.items.activeBoosts.energyExpiry = base + item.duration*1000;
+  } else if(id==='boost_luck'){
+    state.items.activeBoosts.gachaLuckUses = (state.items.activeBoosts.gachaLuckUses||0) + item.uses;
+  } else if(id==='boost_fill'){
+    state.pool += currentIncomePerSec()*item.fillSeconds;
+  } else if(id==='racao'){
+    state.inventory.racao = (state.inventory.racao||0)+1;
+  }
+  render(); saveState();
+}
+
+function swapPassives(){
+  const sourceId = document.getElementById('swapSource').value;
+  const targetId = document.getElementById('swapTarget').value;
+  const msg = document.getElementById('swapMsg');
+  if(!sourceId || !targetId || sourceId===targetId){ msg.textContent='Selecione dois animais diferentes.'; return; }
+  const cost = 10000;
+  if(state.coins < cost){ msg.textContent='Moedas insuficientes (precisa de 10.000).'; return; }
+  state.coins -= cost;
+  const a = state.animalPassives[sourceId]||null;
+  const b = state.animalPassives[targetId]||null;
+  if(b) state.animalPassives[sourceId]=b; else delete state.animalPassives[sourceId];
+  if(a) state.animalPassives[targetId]=a; else delete state.animalPassives[targetId];
+  msg.textContent='Passivas trocadas com sucesso!';
+  render(); saveState();
+}
+
+function claimMission(idx){
+  const m = state.missions[idx];
+  const tpl = MISSION_TEMPLATES[m.tpl];
+  const target = Math.round(tpl.baseTarget*Math.pow(tpl.growth,m.tier-1));
+  if(tpl.statFn() < target) return;
+  const reward = tpl.reward(m.tier);
+  const mult = missionRewardMult();
+  if(reward.coins) state.coins += Math.round(reward.coins*mult);
+  if(reward.gems) state.gems += Math.round(reward.gems*mult);
+  let newTpl = m.tpl;
+  if(MISSION_TEMPLATES.length>1){ do{ newTpl = Math.floor(Math.random()*MISSION_TEMPLATES.length); }while(newTpl===m.tpl); }
+  state.missions[idx] = {tpl:newTpl, tier:1};
+  render(); saveState();
+}
+
+async function buyEventGacha(){
+  const cost = currentEventGachaCost();
+  if(state.bolas < cost) return;
+  state.bolas -= cost;
+  state.eventGachaPulls += 1;
+
+  const mound=document.getElementById('mound2'), reveal=document.getElementById('reveal2'), btn=document.getElementById('eventGachaBtn');
+  btn.disabled=true; mound.classList.add('shaking'); reveal.innerHTML='';
+  await new Promise(r=>setTimeout(r,550));
+  mound.classList.remove('shaking');
+
+  const sp = pickEventGacha();
+  state.eventAnimals[sp.id] = (state.eventAnimals[sp.id]||0)+1;
+  const color = RARITY_COLOR[sp.rarity];
+  spawnParticles(color, 'mound2');
+  reveal.innerHTML = '<div class="card-anim" style="border-color:'+color+'">'+
+    '<span class="re">'+sp.emoji+'</span><span class="rn">'+sp.name+'</span>'+
+    '<span class="rr" style="color:'+color+'">'+RARITY_LABEL[sp.rarity]+' · x'+state.eventAnimals[sp.id]+'</span></div>';
+
+  render();
+  await saveState();
+}
+
+function playPenalty(dir){
+  const dirs = ['esquerda','meio','direita'];
+  const keeperDir = dirs[Math.floor(Math.random()*3)];
+  const scored = dir !== keeperDir;
+  state.eventPenaltyAttempts += 1;
+  let reward;
+  if(scored){ reward = 3+Math.floor(Math.random()*4); state.eventGoals += 1; }
+  else{ reward = 1; }
+  state.bolas += reward;
+
+  const result = document.getElementById('penaltyResult');
+  result.style.color = scored ? '#4F8A54' : '#C7652C';
+  result.textContent = scored ? '⚽ GOOOL! +'+reward+' bolas' : '🧤 Defesa do goleiro! +'+reward+' bola';
+
+  render();
+  saveState();
+}
+
+function claimEventMission(idx){
+  const m = state.eventMissions[idx];
+  const tpl = EVENT_MISSION_TEMPLATES[m.tpl];
+  const target = Math.round(tpl.baseTarget*Math.pow(tpl.growth,m.tier-1));
+  if(tpl.statFn() < target) return;
+  const reward = tpl.reward(m.tier);
+  const mult = missionRewardMult();
+  if(reward.coins) state.coins += Math.round(reward.coins*mult);
+  if(reward.gems) state.gems += Math.round(reward.gems*mult);
+  if(reward.bolas) state.bolas += Math.round(reward.bolas*mult);
+  let newTpl = m.tpl;
+  if(EVENT_MISSION_TEMPLATES.length>1){ do{ newTpl = Math.floor(Math.random()*EVENT_MISSION_TEMPLATES.length); }while(newTpl===m.tpl); }
+  state.eventMissions[idx] = {tpl:newTpl, tier:1};
+  render(); saveState();
+}
+
+function sanitizeKey(name){
+  return name.trim().slice(0,16).replace(/[^a-zA-Z0-9_\- ]/g,'').replace(/\s+/g,'_') || 'Anonimo';
+}
+
+/* ---- Player identity ---- */
+function generatePlayerId(nick){
+  return sanitizeKey(nick)+'-'+Math.random().toString(36).slice(2,6);
+}
+async function setNickname(nickRaw){
+  const nick = nickRaw.trim().slice(0,16);
+  if(!nick) return false;
+  state.nick = nick;
+  if(!state.playerId) state.playerId = generatePlayerId(nick);
+  document.getElementById('statNick').textContent = state.nick;
+  await publishProfile();
+  await saveState();
+  return true;
+}
+async function publishProfile(){
+  if(!state.playerId) return;
+  try{
+    await window.storage.set('player:'+state.playerId, JSON.stringify({
+      playerId: state.playerId, nick: state.nick,
+      score: Math.floor(state.totalCollected), species: ownedCount(),
+      rebirths: state.rebirths, shiny: totalShinyCount(), updatedAt: Date.now()
+    }), true);
+  }catch(e){}
+}
+async function renderRanking(){
+  const wrap = document.getElementById('rankingList');
+  wrap.innerHTML = '<p class="note">Carregando...</p>';
+  try{
+    await publishProfile();
+    const idx = await window.storage.list('player:', true);
+    const keys = (idx && idx.keys) ? idx.keys.slice(0,80) : [];
+    const entries = [];
+    for(const k of keys){ try{ const r = await window.storage.get(k, true); if(r && r.value) entries.push(JSON.parse(r.value)); }catch(e){} }
+    entries.sort((a,b)=>b.score-a.score);
+    const top = entries.slice(0,25);
+    wrap.innerHTML = top.length ? top.map((e,i)=>{
+      const mine = e.playerId===state.playerId;
+      return '<div class="lb-row"'+(mine?' style="color:var(--sunset-deep);"':'')+'><span>#'+(i+1)+' '+e.nick+(mine?' (você)':'')+'</span><span>🪙'+Math.floor(e.score)+' · 🐾'+e.species+' · ✨'+e.shiny+' · 🔄'+e.rebirths+'</span></div>';
+    }).join('') : '<p class="note">Nenhum jogador publicado ainda. Seja o primeiro!</p>';
+  }catch(e){ wrap.innerHTML = '<p class="note">Não foi possível carregar o ranking agora.</p>'; }
+}
+
+/* ---- Trading ---- */
+function addTradeLog(msg){
+  state.tradeLog.unshift(new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' — '+msg);
+  state.tradeLog = state.tradeLog.slice(0,10);
+}
+function renderTradeForm(){
+  const sel = document.getElementById('tradeOfferSpecies');
+  const owned = SPECIES.filter(sp=>getStars(state.animals,sp.id)[0]>=1);
+  sel.innerHTML = owned.length ? owned.map(sp=>'<option value="'+sp.id+'">'+sp.emoji+' '+sp.name+' (você tem '+getStars(state.animals,sp.id)[0]+')</option>').join('') : '<option value="">Nenhum animal na forma base disponível</option>';
+  const wantSel = document.getElementById('tradeWantSpecies');
+  if(!wantSel.dataset.filled){
+    wantSel.innerHTML = SPECIES.map(sp=>'<option value="'+sp.id+'">'+sp.emoji+' '+sp.name+'</option>').join('');
+    wantSel.dataset.filled = '1';
+  }
+}
+function renderMyOffers(){
+  const wrap = document.getElementById('myOffersList');
+  if(!state.myOffers.length){ wrap.innerHTML = '<p class="note">Nenhuma oferta publicada ainda.</p>'; return; }
+  wrap.innerHTML = state.myOffers.slice().reverse().map(o=>{
+    const sp = speciesById(o.offerSpeciesId);
+    const wantText = o.wantType==='coins' ? '🪙 '+o.wantCoins : (speciesById(o.wantSpeciesId).emoji+' '+speciesById(o.wantSpeciesId).name);
+    const statusLabel = {open:'🟢 Aberta', completed:'🟡 Aceita, aguardando coleta', claimed:'✅ Concluída', cancelled:'❌ Cancelada'}[o.status]||o.status;
+    return '<div class="shop-item"><div class="info"><b>'+sp.emoji+' '+sp.name+'</b><span>Quer: '+wantText+' · '+statusLabel+'</span></div>'+
+      (o.status==='open' ? '<button class="btn-ghost btn-sm" data-cancel="'+o.id+'">Cancelar</button>' : '')+'</div>';
+  }).join('');
+  wrap.querySelectorAll('[data-cancel]').forEach(b=>b.addEventListener('click', ()=>cancelOffer(b.getAttribute('data-cancel'))));
+
+  const logWrap = document.getElementById('tradeLogWrap');
+  if(logWrap) logWrap.innerHTML = state.tradeLog.length ? state.tradeLog.map(l=>'<div>'+l+'</div>').join('') : '<span style="opacity:0.5;">Nenhuma troca ainda.</span>';
+}
+async function renderMarket(){
+  const wrap = document.getElementById('marketList');
+  wrap.innerHTML = '<p class="note">Carregando...</p>';
+  try{
+    const idx = await window.storage.list('trade:', true);
+    const keys = (idx && idx.keys) ? idx.keys.slice(0,80) : [];
+    const offers = [];
+    for(const k of keys){ try{ const r = await window.storage.get(k, true); if(r && r.value) offers.push(JSON.parse(r.value)); }catch(e){} }
+    const open = offers.filter(o=>o.status==='open' && o.fromPlayerId!==state.playerId);
+    wrap.innerHTML = open.length ? open.map(o=>{
+      const sp = speciesById(o.offerSpeciesId);
+      const wantText = o.wantType==='coins' ? '🪙 '+o.wantCoins+' moedas' : (speciesById(o.wantSpeciesId).emoji+' '+speciesById(o.wantSpeciesId).name);
+      const canAfford = o.wantType==='coins' ? state.coins>=o.wantCoins : (getStars(state.animals,o.wantSpeciesId)[0]>=1);
+      return '<div class="shop-item"><div class="info"><b>'+o.fromNick+' oferece '+sp.emoji+' '+sp.name+'</b><span>Quer: '+wantText+'</span></div>'+
+        '<button class="btn-secondary btn-sm" data-accept="'+o.id+'" '+(canAfford?'':'disabled')+'>Aceitar</button></div>';
+    }).join('') : '<p class="note">Nenhuma oferta disponível no momento.</p>';
+    wrap.querySelectorAll('[data-accept]').forEach(b=>b.addEventListener('click', ()=>acceptOfferById(b.getAttribute('data-accept'))));
+  }catch(e){ wrap.innerHTML = '<p class="note">Não foi possível carregar o mercado agora.</p>'; }
+}
+async function createOffer(){
+  const offerId = document.getElementById('tradeOfferSpecies').value;
+  if(!offerId || getStars(state.animals,offerId)[0]<1) return;
+  const wantType = document.getElementById('tradeWantType').value;
+  let wantCoins=0, wantSpeciesId='';
+  if(wantType==='coins'){
+    wantCoins = parseInt(document.getElementById('tradeWantCoins').value)||0;
+    if(wantCoins<=0){ alert('Defina um preço em moedas maior que zero.'); return; }
+  } else {
+    wantSpeciesId = document.getElementById('tradeWantSpecies').value;
+    if(!wantSpeciesId) return;
+  }
+  ensureArr(state.animals, offerId)[0] -= 1;
+  const id = state.playerId+'-'+Date.now();
+  const record = {id, fromPlayerId:state.playerId, fromNick:state.nick, offerSpeciesId:offerId, wantType, wantCoins, wantSpeciesId, status:'open', createdAt:Date.now(), claimedByOfferer:false};
+  try{ await window.storage.set('trade:'+id, JSON.stringify(record), true); }catch(e){}
+  state.myOffers.push({id, offerSpeciesId:offerId, wantType, wantCoins, wantSpeciesId, status:'open'});
+  addTradeLog('📤 Você publicou uma oferta de '+speciesById(offerId).name+'.');
+  render(); saveState();
+}
+async function acceptOfferById(id){
+  try{
+    const r = await window.storage.get('trade:'+id, true);
+    if(!r||!r.value){ alert('Essa oferta não existe mais.'); renderMarket(); return; }
+    const data = JSON.parse(r.value);
+    if(data.status!=='open'){ alert('Essa oferta já não está mais disponível.'); renderMarket(); return; }
+    if(data.wantType==='coins'){
+      if(state.coins<data.wantCoins){ alert('Moedas insuficientes.'); return; }
+      state.coins -= data.wantCoins;
+    } else {
+      if(getStars(state.animals,data.wantSpeciesId)[0]<1){ alert('Você não tem esse animal na forma base.'); return; }
+      state.animals[data.wantSpeciesId][0] -= 1;
+    }
+    grantSpecies(speciesById(data.offerSpeciesId), false);
+    data.status='completed'; data.toPlayerId=state.playerId; data.toNick=state.nick;
+    data.paymentType=data.wantType;
+    if(data.wantType==='coins') data.paymentCoins=data.wantCoins; else data.paymentSpeciesId=data.wantSpeciesId;
+    data.claimedByOfferer=false;
+    await window.storage.set('trade:'+id, JSON.stringify(data), true);
+    addTradeLog('🤝 Você trocou com '+data.fromNick+' e recebeu '+speciesById(data.offerSpeciesId).name+'!');
+    render(); saveState();
+    renderMarket();
+  }catch(e){ alert('Não foi possível concluir a troca agora.'); }
+}
+async function cancelOffer(id){
+  const off = state.myOffers.find(o=>o.id===id);
+  if(!off || off.status!=='open') return;
+  try{
+    const r = await window.storage.get('trade:'+id, true);
+    if(r && r.value){
+      const data = JSON.parse(r.value);
+      if(data.status!=='open'){ alert('Essa oferta já foi aceita por outro jogador — verificando pagamento...'); await checkMyOffers(); return; }
+      data.status='cancelled';
+      await window.storage.set('trade:'+id, JSON.stringify(data), true);
+    }
+  }catch(e){}
+  ensureArr(state.animals, off.offerSpeciesId)[0] += 1;
+  off.status='cancelled';
+  addTradeLog('❌ Você cancelou a oferta de '+speciesById(off.offerSpeciesId).name+'.');
+  render(); saveState();
+}
+async function checkMyOffers(){
+  const pending = state.myOffers.filter(o=>o.status==='open');
+  if(!pending.length) return;
+  let changed=false;
+  for(const off of pending){
+    try{
+      const r = await window.storage.get('trade:'+off.id, true);
+      if(!r||!r.value) continue;
+      const data = JSON.parse(r.value);
+      if(data.status==='completed' && !data.claimedByOfferer){
+        if(data.paymentType==='coins'){ state.coins += data.paymentCoins; }
+        else { grantSpecies(speciesById(data.paymentSpeciesId), false); }
+        data.claimedByOfferer=true;
+        await window.storage.set('trade:'+off.id, JSON.stringify(data), true);
+        off.status='claimed';
+        addTradeLog('📬 '+data.toNick+' aceitou sua troca! Você recebeu '+(data.paymentType==='coins'?'🪙 '+data.paymentCoins:speciesById(data.paymentSpeciesId).name)+'.');
+        changed=true;
+      }
+    }catch(e){}
+  }
+  if(changed){ render(); saveState(); }
+}
+
+async function redeemCode(){
+  const raw = document.getElementById('codeInput').value.trim().toUpperCase();
+  const msg = document.getElementById('codeMsg');
+  if(!raw){ msg.style.color='#C7652C'; msg.textContent='Digite um código.'; return; }
+  if(state.redeemedCodes.includes(raw)){ msg.style.color='#C7652C'; msg.textContent='Você já resgatou este código.'; return; }
+  const reward = CODES[raw];
+  if(!reward){ msg.style.color='#C7652C'; msg.textContent='Código inválido.'; return; }
+  if(reward.coins) state.coins += reward.coins;
+  if(reward.gems) state.gems += reward.gems;
+  if(reward.bolas) state.bolas += reward.bolas;
+  state.redeemedCodes.push(raw);
+  const parts = [];
+  if(reward.coins) parts.push('🪙 '+reward.coins);
+  if(reward.gems) parts.push('💎 '+reward.gems);
+  if(reward.bolas) parts.push('⚽ '+reward.bolas);
+  msg.style.color='#4F8A54';
+  msg.textContent = 'Código resgatado! Você recebeu '+parts.join(' + ')+'.';
+  document.getElementById('codeInput').value='';
+  render(); saveState();
+}
+
+/* =========================================================
+   TABS & EVENTS
+========================================================= */
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.getAttribute('data-tab');
+    document.getElementById('tab-'+tab).classList.add('active');
+    if(tab==='ranking') renderRanking();
+    if(tab==='trades'){ renderMarket(); checkMyOffers(); }
+  });
+});
+document.getElementById('collectBtn').addEventListener('click', collectPool);
+document.getElementById('gachaBtn').addEventListener('click', buyGacha);
+document.getElementById('resetBtn').addEventListener('click', resetGame);
+document.getElementById('rebirthBtn').addEventListener('click', doRebirth);
+document.getElementById('autoToggle').addEventListener('change', (e)=>{ state.autoCollect=e.target.checked; saveState(); });
+document.getElementById('codeBtn').addEventListener('click', redeemCode);
+document.getElementById('eventGachaBtn').addEventListener('click', buyEventGacha);
+document.getElementById('swapBtn').addEventListener('click', swapPassives);
+document.getElementById('refreshRanking').addEventListener('click', renderRanking);
+document.getElementById('refreshMarket').addEventListener('click', ()=>{ renderMarket(); checkMyOffers(); });
+document.getElementById('createOfferBtn').addEventListener('click', createOffer);
+document.getElementById('tradeWantType').addEventListener('change', (e)=>{
+  const isCoins = e.target.value==='coins';
+  document.getElementById('tradeWantCoins').classList.toggle('hidden', !isCoins);
+  document.getElementById('tradeWantSpecies').classList.toggle('hidden', isCoins);
+});
+document.getElementById('nickBtn').addEventListener('click', async ()=>{
+  const ok = await setNickname(document.getElementById('nickInput').value);
+  if(!ok){ alert('Digite um apelido válido.'); return; }
+  document.getElementById('nickOverlay').classList.add('hidden');
+  if(!state.startAnimal) document.getElementById('starterOverlay').classList.remove('hidden');
+  render();
+});
+document.querySelectorAll('[data-pen]').forEach(b=>{ b.addEventListener('click', ()=>playPenalty(b.getAttribute('data-pen'))); });
+document.querySelectorAll('[data-starter]').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const id = btn.getAttribute('data-starter');
+    state.startAnimal = id;
+    state.animalPassives[id] = rollPassive();
+    state.lastFed[id] = Date.now();
+    ensureArr(state.animals, id)[0] = 1;
+    document.getElementById('starterOverlay').classList.add('hidden');
+    render(); await saveState();
+  });
+});
+
+(async function init(){
+  await loadState();
+  if(!state.nick){
+    document.getElementById('nickInput').value = '';
+    document.getElementById('nickOverlay').classList.remove('hidden');
+  } else if(!state.startAnimal){
+    document.getElementById('starterOverlay').classList.remove('hidden');
+  }
+  render();
+  checkMyOffers();
+  setInterval(tick, 1000);
+  setInterval(saveState, 15000);
+  setInterval(checkMyOffers, 45000);
+  setInterval(publishProfile, 120000);
+})();
+</script>
+</body>
+</html>
